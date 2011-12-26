@@ -6,6 +6,23 @@ const int LED_PORT(9);
 const int MIN_REPORT_FREQ(60000);
 const int HIGH_THRESH(10);
 
+/*
+ Output:
+
+ - Normal readings:
+
+     < PORT READING (ON|OFF) MS_SINCE_CHANGE
+
+ - Info messages
+
+     # text
+
+ - Exceptional messages
+
+     * MS_SINCE_LAST_HEARD
+
+ */
+
 // The JeeLink LED is backwards.  I don't know why.
 #define JEE_LED_ON 0
 #define JEE_LED_OFF 1
@@ -60,7 +77,8 @@ void loop () {
 
         maybeChangeState(data.port, data.reading);
 
-        // PORT READING (ON|OFF) MS_SINCE_CHANGE
+        // < PORT READING (ON|OFF) MS_SINCE_CHANGE
+        Serial.print("< ");
         Serial.print(data.port, DEC);
         Serial.print(" ");
         delay(1);
@@ -92,7 +110,7 @@ void loop () {
 
     if (lastHeardTimer.poll()) {
         lastHeardTimer.set(MIN_REPORT_FREQ);
-        Serial.print("# silent ");
+        Serial.print("* ");
         delay(1);
         Serial.println(millis() - lastHeard);
     }
