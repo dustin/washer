@@ -15,12 +15,12 @@ typedef struct {
     int reading;
 } data_t;
 
-bool shouldSend(false);
-unsigned long lastHeard(0);
-unsigned long lastChange(0);
-bool state(false);
+static bool shouldSend(false);
+static unsigned long lastHeard(0);
+static unsigned long lastChange(0);
+static bool state(false);
 
-MilliTimer lastHeardTimer;
+static MilliTimer lastHeardTimer;
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
@@ -30,36 +30,25 @@ void setup () {
 
     Serial.begin(57600);
     rf12_initialize(THIS_ID, RF12_433MHZ, 4);
-    Serial.print("Initialized ");
+    Serial.print("# Initialized ");
     Serial.println(THIS_ID);
 
     lastHeardTimer.set(MIN_REPORT_FREQ);
 }
 
-void maybeChangeState(int r) {
-    bool thisState(r > HIGH_THRESH);
+static void maybeChangeState(byte port, int reading) {
+    bool thisState(reading > HIGH_THRESH);
     if (state != thisState) {
         lastChange = millis();
+        Serial.print("+ ");
+        delay(1);
+        Serial.print(port);
+        delay(5);
+        Serial.println(thisState ? " ON" : " OFF");
+        delay(1);
     }
     state = thisState;
     digitalWrite(LED_PORT, state ? JEE_LED_ON : JEE_LED_OFF);
-}
-
-void printTimeDiff(unsigned long m) {
-    m /= 1000;
-    if (m > (86400 * 2)) {
-        Serial.print(m / 86400);
-        Serial.print(" days");
-    } else if (m > (3600 * 2)) {
-        Serial.print(m / 3600);
-        Serial.print(" hours");
-    } else if (m > (60 * 2)) {
-        Serial.print(m / 60);
-        Serial.print(" minutes");
-    } else {
-        Serial.print(m);
-        Serial.print(" seconds");
-    }
 }
 
 void loop () {
@@ -69,22 +58,18 @@ void loop () {
 
         data = *((data_t*)rf12_data);
 
-        maybeChangeState(data.reading);
+        maybeChangeState(data.port, data.reading);
 
-        Serial.print("Read ");
-        delay(10);
-        Serial.print(data.reading, DEC);
-        delay(10);
-        Serial.print(state ? " (ON" : " (OFF");
-        delay(10);
-        Serial.print(") from port ");
-        delay(10);
+        // PORT READING (ON|OFF) MS_SINCE_CHANGE
         Serial.print(data.port, DEC);
-        delay(10);
-        Serial.print(". last state change ");
-        delay(10);
-        printTimeDiff(millis() - lastChange);
-        delay(10);
+        Serial.print(" ");
+        delay(1);
+        Serial.print(data.reading, DEC);
+        delay(5);
+        Serial.print(state ? " ON " : " OFF ");
+        delay(5);
+        Serial.print(millis() - lastChange, DEC);
+        delay(5);
         Serial.println("");
 
         lastHeardTimer.set(MIN_REPORT_FREQ);
@@ -107,11 +92,9 @@ void loop () {
 
     if (lastHeardTimer.poll()) {
         lastHeardTimer.set(MIN_REPORT_FREQ);
-        Serial.print("No message in ");
-        delay(10);
-        printTimeDiff(millis() - lastHeard);
-        delay(10);
-        Serial.println("");
+        Serial.print("# silent ");
+        delay(1);
+        Serial.println(millis() - lastHeard);
     }
 }
 
