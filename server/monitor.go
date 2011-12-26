@@ -11,9 +11,9 @@ import (
 )
 
 type Reading struct {
-	Port int
-	Reading int
-	On bool
+	Port          int
+	Reading       int
+	On            bool
 	StateDuration time.Duration
 }
 
@@ -57,11 +57,16 @@ func processException(line string) {
 func processLine(line string) {
 	// log.Printf("<: %s", line)
 	switch line[0] {
-	default: log.Printf("UNHANDLED:  %s", line)
-	case '<': processReading(line)
-	case '#': processInfo(line)
-	case '*': processException(line)
-	case '+': processSwitchEvent(line)
+	default:
+		log.Printf("UNHANDLED:  %s", line)
+	case '<':
+		processReading(line)
+	case '#':
+		processInfo(line)
+	case '*':
+		processException(line)
+	case '+':
+		processSwitchEvent(line)
 	}
 }
 
