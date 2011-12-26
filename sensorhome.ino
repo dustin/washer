@@ -45,6 +45,23 @@ void maybeChangeState(int r) {
     digitalWrite(LED_PORT, state ? JEE_LED_ON : JEE_LED_OFF);
 }
 
+void printTimeDiff(unsigned long m) {
+    m /= 1000;
+    if (m > (86400 * 2)) {
+        Serial.print(m / 86400);
+        Serial.print(" days");
+    } else if (m > (3600 * 2)) {
+        Serial.print(m / 3600);
+        Serial.print(" hours");
+    } else if (m > (60 * 2)) {
+        Serial.print(m / 60);
+        Serial.print(" minutes");
+    } else {
+        Serial.print(m);
+        Serial.print(" seconds");
+    }
+}
+
 void loop () {
     data_t data;
 
@@ -64,9 +81,9 @@ void loop () {
         delay(10);
         Serial.print(". last state change ");
         delay(10);
-        Serial.print(millis() - lastChange);
+        printTimeDiff(millis() - lastChange);
         delay(10);
-        Serial.println("ms ago");
+        Serial.println("");
 
         lastHeardTimer.set(MIN_REPORT_FREQ);
         lastHeard = millis();
@@ -90,9 +107,9 @@ void loop () {
         lastHeardTimer.set(MIN_REPORT_FREQ);
         Serial.print("No message in ");
         delay(10);
-        Serial.print((millis() - lastHeard) / 1000);
+        printTimeDiff(millis() - lastHeard);
         delay(10);
-        Serial.println(" seconds");
+        Serial.println("");
     }
 }
 
