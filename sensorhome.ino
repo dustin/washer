@@ -75,7 +75,9 @@ void loop () {
         delay(10);
         Serial.print(data.reading, DEC);
         delay(10);
-        Serial.print(" from port ");
+        Serial.print(state ? " (ON" : " (OFF");
+        delay(10);
+        Serial.print(") from port ");
         delay(10);
         Serial.print(data.port, DEC);
         delay(10);
