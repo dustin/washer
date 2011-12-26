@@ -21,6 +21,10 @@ const int HIGH_THRESH(10);
 
      * MS_SINCE_LAST_HEARD
 
+ - Other events:
+
+     + PORT (ON|OFF) MS_IN_PREV_STATE
+
  */
 
 // The JeeLink LED is backwards.  I don't know why.
@@ -56,13 +60,15 @@ void setup () {
 static void maybeChangeState(byte port, int reading) {
     bool thisState(reading > HIGH_THRESH);
     if (state != thisState) {
-        lastChange = millis();
+        unsigned long now(millis());
         Serial.print("+ ");
         delay(1);
         Serial.print(port);
         delay(5);
-        Serial.println(thisState ? " ON" : " OFF");
+        Serial.print(thisState ? " ON " : " OFF ");
         delay(1);
+        Serial.println(now - lastChange);
+        lastChange = millis();
     }
     state = thisState;
     digitalWrite(LED_PORT, state ? JEE_LED_ON : JEE_LED_OFF);

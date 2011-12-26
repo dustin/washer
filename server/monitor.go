@@ -41,7 +41,8 @@ func processSwitchEvent(line string) {
 	parts := strings.Split(line, " ")
 	port := int(parseInt(parts[1], 32))
 	// on := parts[2] == "ON"
-	log.Printf("Changed %d to %s", port, parts[2])
+	d := time.Duration(1e6 * parseInt(parts[3], 64))
+	log.Printf("Changed %d to %s after %s", port, parts[2], d.String())
 }
 
 func processInfo(line string) {
