@@ -27,11 +27,12 @@ func parseInt(s string, size int) int64 {
 
 func processReading(line string) {
 	parts := strings.Split(line, " ")
-	var r Reading
-	r.Port = int(parseInt(parts[1], 32))
-	r.Reading = int(parseInt(parts[2], 32))
-	r.On = parts[3] == "ON"
-	r.StateDuration = time.Duration(1e6 * parseInt(parts[4], 64))
+	r := Reading{
+		Port:          int(parseInt(parts[1], 32)),
+		Reading:       int(parseInt(parts[2], 32)),
+		On:            parts[3] == "ON",
+		StateDuration: time.Duration(1e6 * parseInt(parts[4], 64))}
+
 	log.Printf("Read %d (%s) from %d.  In that state %s",
 		r.Reading, parts[3], r.Port, r.StateDuration.String())
 
