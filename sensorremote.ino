@@ -12,7 +12,6 @@ const int LCD_PIN_TX(7);
 const int LCD_PIN_RX(4); // Digital on Port 1 (just used for analog)
 
 MilliTimer pollTimer, xmitTimer;
-bool pending(false);
 unsigned long lastAck(0);
 
 SoftwareSerial lcd(LCD_PIN_RX, LCD_PIN_TX);
@@ -128,8 +127,6 @@ void loop () {
     }
 
     if (pollTimer.poll()) {
-        pending = true;
-
         for (int i = 0; i < NUM_PORTS; ++i) {
             int r(analogRead(data[i].port));
             if (r != data[i].reading) {
@@ -152,13 +149,11 @@ void loop () {
     }
 
     if (shouldSendAny()) {
-
         Serial.print("Transmitting ");
         for (int i = 0; i < NUM_PORTS; ++i) {
             if (shouldSend[i] && rf12_canSend()) {
                 Serial.println(data[i].reading);
 
-                pending = false;
                 rf12_sendStart(RF12_HDR_ACK, &data[i], sizeof(data[i]));
                 shouldSend[i] = false;
             }
