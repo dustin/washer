@@ -4,6 +4,7 @@
 const int THIS_ID(1);
 const int LED_PORT(9);
 const int MIN_REPORT_FREQ(60000);
+const int HIGH_THRESH(10);
 
 // The JeeLink LED is backwards.  I don't know why.
 #define JEE_LED_ON 0
@@ -16,6 +17,8 @@ typedef struct {
 
 bool shouldSend(false);
 unsigned long lastHeard(0);
+unsigned long lastChange(0);
+bool state(false);
 
 MilliTimer lastHeardTimer;
 
@@ -33,6 +36,15 @@ void setup () {
     lastHeardTimer.set(MIN_REPORT_FREQ);
 }
 
+void maybeChangeState(int r) {
+    bool thisState(r > HIGH_THRESH);
+    if (state != thisState) {
+        lastChange = millis();
+    }
+    state = thisState;
+    digitalWrite(LED_PORT, state ? JEE_LED_ON : JEE_LED_OFF);
+}
+
 void loop () {
     data_t data;
 
@@ -40,15 +52,21 @@ void loop () {
 
         data = *((data_t*)rf12_data);
 
+        maybeChangeState(data.reading);
+
         Serial.print("Read ");
         delay(10);
         Serial.print(data.reading, DEC);
         delay(10);
-        Serial.print(", from port ");
+        Serial.print(" from port ");
         delay(10);
-        Serial.println(data.port, DEC);
-
-        digitalWrite(LED_PORT, data.reading > 10 ? JEE_LED_ON : JEE_LED_OFF);
+        Serial.print(data.port, DEC);
+        delay(10);
+        Serial.print(". last state change ");
+        delay(10);
+        Serial.print(millis() - lastChange);
+        delay(10);
+        Serial.println("ms ago");
 
         lastHeardTimer.set(MIN_REPORT_FREQ);
         lastHeard = millis();
@@ -69,6 +87,7 @@ void loop () {
     }
 
     if (lastHeardTimer.poll()) {
+        lastHeardTimer.set(MIN_REPORT_FREQ);
         Serial.print("No message in ");
         delay(10);
         Serial.print((millis() - lastHeard) / 1000);
