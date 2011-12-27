@@ -142,7 +142,7 @@ void loop () {
             for (int i = 0; i < NUM_PORTS; ++i) {
                 if (data[i].seq == recv_seq) {
                     data[i].seq = next_seq();
-                    data[i].high = 0;
+                    data[i].high = data[i].reading;
                     acked[i] = true;
                 }
             }
@@ -158,7 +158,7 @@ void loop () {
             int r(analogRead(data[i].port));
             if (r != data[i].reading) {
                 data[i].reading = r;
-                data[i].high = max(data[i].high, data[i].reading);
+                data[i].high = max(data[i].high, r);
                 shouldSend[i] = true;
             }
             if (!acked[i]) {
@@ -183,13 +183,23 @@ void loop () {
         Serial.print("Transmitting ");
         for (int i = 0; i < NUM_PORTS; ++i) {
             if (shouldSend[i] && rf12_canSend()) {
-                Serial.println(data[i].reading);
-
                 rf12_sendStart(RF12_HDR_ACK, &data[i], sizeof(data[i]));
+
+                Serial.print(data[i].port);
+                Serial.print(":");
+                delay(1);
+                Serial.print(data[i].reading);
+                Serial.print("@");
+                Serial.print(data[i].seq, DEC);
+                delay(1);
+                Serial.print(" ");
+                delay(1);
+
                 shouldSend[i] = false;
                 acked[i] = false;
             }
         }
+        Serial.println("");
 
         xmitTimer.set(XMIT_FREQ);
     }

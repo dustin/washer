@@ -13,6 +13,8 @@ import (
 type Reading struct {
 	Port          int
 	Reading       int
+	High          int
+	Seq           int
 	On            bool
 	StateDuration time.Duration
 }
@@ -30,11 +32,14 @@ func processReading(line string) {
 	r := Reading{
 		Port:          int(parseInt(parts[1], 32)),
 		Reading:       int(parseInt(parts[2], 32)),
-		On:            parts[3] == "ON",
-		StateDuration: time.Duration(1e6 * parseInt(parts[4], 64))}
+		High:          int(parseInt(parts[3], 32)),
+		Seq:           int(parseInt(parts[4], 32)),
+		On:            parts[5] == "ON",
+		StateDuration: time.Duration(1e6 * parseInt(parts[6], 64))}
 
-	log.Printf("Read %d (%s) from %d.  In that state %s",
-		r.Reading, parts[3], r.Port, r.StateDuration.String())
+	log.Printf("Read %d/%d (%s), from %d (%d).  In that state %s",
+		r.Reading, r.High, parts[5], r.Port, r.Seq,
+		r.StateDuration.String())
 
 }
 
