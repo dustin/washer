@@ -11,10 +11,10 @@ const int NUM_PORTS(1);
 const int LCD_PIN_TX(7);
 const int LCD_PIN_RX(4); // Digital on Port 1 (just used for analog)
 
-MilliTimer pollTimer, xmitTimer;
-unsigned long lastAck(0);
+static MilliTimer pollTimer, xmitTimer;
+static unsigned long lastAck(0);
 
-SoftwareSerial lcd(LCD_PIN_RX, LCD_PIN_TX);
+static SoftwareSerial lcd(LCD_PIN_RX, LCD_PIN_TX);
 
 typedef struct {
     int reading;
@@ -23,18 +23,18 @@ typedef struct {
     byte seq;
 } data_t;
 
-data_t data[NUM_PORTS];
-bool shouldSend[NUM_PORTS];
-bool acked[NUM_PORTS];
-byte global_seq(0);
+static data_t data[NUM_PORTS];
+static bool shouldSend[NUM_PORTS];
+static bool acked[NUM_PORTS];
+static byte global_seq(0);
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
 const char *spinChars[] = {
     "/", "-", "?0", "|", 0};
-int spinPos(0);
+static int spinPos(0);
 
-void spin(unsigned long x=0) {
+static void spin(unsigned long x=0) {
     lcd.print(spinChars[spinPos++]);
     lcd.print("?h");
     if (spinChars[spinPos] == 0) {
@@ -43,7 +43,7 @@ void spin(unsigned long x=0) {
     delay(x);
 }
 
-void lcdInit() {
+static void lcdInit() {
     pinMode(LCD_PIN_TX, OUTPUT);
     lcd.begin(9600);
 
@@ -126,7 +126,7 @@ void setup () {
     Serial.println(THIS_ID);
 }
 
-bool shouldSendAny() {
+static bool shouldSendAny() {
     bool rv(false);
     for (int i = 0; i < NUM_PORTS; ++i) {
         rv |= shouldSend[i];
