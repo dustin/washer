@@ -11,7 +11,7 @@ const int HIGH_THRESH(10);
 
  - Normal readings:
 
-     < PORT READING (ON|OFF) MS_SINCE_CHANGE
+     < PORT READING HIGH SEQ (ON|OFF) MS_SINCE_CHANGE
 
  - Info messages
 
@@ -32,8 +32,10 @@ const int HIGH_THRESH(10);
 #define JEE_LED_OFF 1
 
 typedef struct {
-    byte port;
     int reading;
+    int high;
+    byte port;
+    byte seq;
 } data_t;
 
 static bool shouldSend(false);
@@ -89,6 +91,12 @@ void loop () {
         Serial.print(" ");
         delay(1);
         Serial.print(data.reading, DEC);
+        Serial.print(" ");
+        delay(1);
+        Serial.print(data.high, DEC);
+        Serial.print(" ");
+        delay(1);
+        Serial.print(data.seq, DEC);
         delay(5);
         Serial.print(state ? " ON " : " OFF ");
         delay(5);
@@ -100,7 +108,7 @@ void loop () {
         lastHeard = millis();
 
         if (RF12_WANTS_ACK) {
-            rf12_sendStart(RF12_ACK_REPLY, 0, 0);
+            rf12_sendStart(RF12_ACK_REPLY, &data.seq, sizeof(data.seq));
             rf12_sendWait(1); // don't power down too soon
         }
 

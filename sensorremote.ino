@@ -17,12 +17,16 @@ unsigned long lastAck(0);
 SoftwareSerial lcd(LCD_PIN_RX, LCD_PIN_TX);
 
 typedef struct {
-    byte port;
     int reading;
+    int high;
+    byte port;
+    byte seq;
 } data_t;
 
 data_t data[NUM_PORTS];
 bool shouldSend[NUM_PORTS];
+bool acked[NUM_PORTS];
+byte global_seq(0);
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
@@ -92,6 +96,13 @@ void lcdInit() {
     lcd.print("?f");
 }
 
+static byte next_seq() {
+    if (++global_seq > 250) {
+        global_seq = 0;
+    }
+    return global_seq;
+}
+
 void setup () {
     lcdInit();
     pollTimer.set(POLL_FREQ);
@@ -99,9 +110,12 @@ void setup () {
 
     // Port initialization
     for (int i = 0; i < NUM_PORTS; ++i) {
-        data[i].port = i;
         data[i].reading = 0;
+        data[i].high = 0;
+        data[i].port = i;
+        data[i].seq = next_seq();
         shouldSend[i] = false;
+        acked[i] = true;
     }
 
     pinMode(LED_PORT, OUTPUT);
@@ -122,6 +136,19 @@ bool shouldSendAny() {
 
 void loop () {
     if (rf12_recvDone() && rf12_crc == 0) {
+        if (rf12_len == sizeof(byte)) {
+            byte recv_seq(*rf12_data);
+
+            for (int i = 0; i < NUM_PORTS; ++i) {
+                if (data[i].seq == recv_seq) {
+                    data[i].seq = next_seq();
+                    data[i].high = 0;
+                    acked[i] = true;
+                }
+            }
+        } else {
+            Serial.println("Incorrect ACK response size.");
+        }
         Serial.println("Got an ACK.");
         lastAck = millis();
     }
@@ -131,6 +158,10 @@ void loop () {
             int r(analogRead(data[i].port));
             if (r != data[i].reading) {
                 data[i].reading = r;
+                data[i].high = max(data[i].high, data[i].reading);
+                shouldSend[i] = true;
+            }
+            if (!acked[i]) {
                 shouldSend[i] = true;
             }
             data[i].reading = r;
@@ -156,6 +187,7 @@ void loop () {
 
                 rf12_sendStart(RF12_HDR_ACK, &data[i], sizeof(data[i]));
                 shouldSend[i] = false;
+                acked[i] = false;
             }
         }
 
