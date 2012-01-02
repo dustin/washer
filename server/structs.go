@@ -8,12 +8,12 @@ import (
 )
 
 type Reading struct {
-	Port          int
-	Reading       int
-	High          int
-	Seq           int
-	On            bool
-	StateDuration time.Duration
+	Port          int           `json:"port"`
+	Reading       int           `json:"reading"`
+	High          int           `json:"high"`
+	Seq           int           `json:"-"`
+	On            bool          `json:"on"`
+	StateDuration time.Duration `json:"state_duration"`
 }
 
 func parseInt(s string, size int) int64 {
@@ -34,6 +34,7 @@ func processReading(line string) {
 		On:            parts[5] == "ON",
 		StateDuration: time.Duration(1e6 * parseInt(parts[6], 64))}
 
+	saveState(ApplianceState(r))
 	log.Printf("Read %d/%d (%s), from %d (%d).  In that state %s",
 		r.Reading, r.High, parts[5], r.Port, r.Seq,
 		r.StateDuration.String())

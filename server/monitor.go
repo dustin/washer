@@ -11,9 +11,11 @@ import (
 )
 
 var mockMode bool
+var webBind string
 
 func init() {
 	flag.BoolVar(&mockMode, "mockMode", false, "True if we're mocking")
+	flag.StringVar(&webBind, "web", ":8123", "Web binding address")
 }
 
 func initSourceSerial() io.ReadCloser {
@@ -73,6 +75,12 @@ func main() {
 	flag.Parse()
 	port := initSource()
 	defer port.Close()
+
+	if webBind != "" {
+		go startWeb(webBind)
+	} else {
+		log.Printf("No web.")
+	}
 
 	r := bufio.NewReader(port)
 	for {
