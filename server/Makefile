@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
 TARG=monitor
-GOFILES=monitor.go
+GOFILES=structs.go monitor.go
 
 include $(GOROOT)/src/Make.cmd
