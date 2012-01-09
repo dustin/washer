@@ -76,11 +76,11 @@ static void maybeChangeState(byte port, int reading) {
     if (state != thisState) {
         unsigned long now(millis());
         Serial.print("+ ");
-        delay(1);
+        Serial.flush();
         Serial.print(port);
-        delay(5);
+        Serial.flush();
         Serial.print(thisState ? " ON " : " OFF ");
-        delay(1);
+        Serial.flush();
         Serial.println(now - lastChange);
         lastChange = millis();
 
@@ -135,19 +135,19 @@ void loop () {
         Serial.print("< ");
         Serial.print(data.port, DEC);
         Serial.print(" ");
-        delay(1);
+        Serial.flush();
         Serial.print(data.reading, DEC);
         Serial.print(" ");
-        delay(1);
+        Serial.flush();
         Serial.print(data.high, DEC);
         Serial.print(" ");
-        delay(1);
+        Serial.flush();
         Serial.print(data.seq, DEC);
-        delay(5);
+        Serial.flush();
         Serial.print(state ? " ON " : " OFF ");
-        delay(5);
+        Serial.flush();
         Serial.print(millis() - lastChange, DEC);
-        delay(5);
+        Serial.flush();
         Serial.println("");
 
         lastHeardTimer.set(MIN_REPORT_FREQ);
@@ -173,9 +173,7 @@ void loop () {
     if (lastHeardTimer.poll()) {
         lastHeardTimer.set(MIN_REPORT_FREQ);
         Serial.print("* ");
-        delay(1);
+        Serial.flush();
         Serial.println(millis() - lastHeard);
     }
 }
-
-
