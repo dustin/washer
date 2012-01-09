@@ -6,7 +6,7 @@ const int LED_PORT(9);
 const int MIN_REPORT_FREQ(60000);
 const int HIGH_THRESH(10);
 // How long the light remains in "blink" state between on and off
-const int LIGHT_BLINK_TIMEOUT(4 * 60 * 1000);
+const unsigned long LIGHT_BLINK_TIMEOUT(5l * 60l * 1000l);
 const int LIGHT_BLINK_FREQ_ON(250);
 const int LIGHT_BLINK_FREQ_OFF(750);
 
@@ -49,12 +49,12 @@ typedef struct {
 static bool shouldSend(false);
 static unsigned long lastHeard(0);
 static unsigned long lastChange(0);
-static bool state(false);
+static bool state(true);
 static bool lightLit(false);
-static enum light_state lightState(LS_OFF);
+static enum light_state lightState(LS_ON);
+static unsigned long offAfter(0);
 
 static MilliTimer lastHeardTimer;
-static MilliTimer lightOffTimer;
 static MilliTimer lightBlinkTimer;
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
@@ -86,7 +86,8 @@ static void maybeChangeState(byte port, int reading) {
 
         if (!thisState) {
             Serial.println("# light_state -> blinking");
-            lightOffTimer.set(LIGHT_BLINK_TIMEOUT);
+            offAfter = millis() + LIGHT_BLINK_TIMEOUT;
+            lightBlinkTimer.set(LIGHT_BLINK_FREQ_ON);
             lightState = LS_BLINKING;
         } else {
             Serial.println("# light_state -> on");
@@ -105,7 +106,7 @@ static void handleLED() {
         digitalWrite(LED_PORT, JEE_LED_ON);
         break;
     case LS_BLINKING:
-        if (lightOffTimer.poll()) {
+        if (millis() > offAfter) {
             Serial.println("# light_state -> off");
             lightState = LS_OFF;
         } else if (lightBlinkTimer.poll()) {
@@ -159,13 +160,17 @@ void loop () {
         }
 
         // power down for 2 seconds (multiple of 16 ms)
-        rf12_sleep(RF12_SLEEP);
-        Sleepy::loseSomeTime(2000);
-        rf12_sleep(RF12_WAKEUP);
+        if (lightState != LS_BLINKING) {
+            rf12_sleep(RF12_SLEEP);
+            Sleepy::loseSomeTime(2000);
+            rf12_sleep(RF12_WAKEUP);
+        }
     } else {
         // switch into idle mode until the next interrupt
-        set_sleep_mode(SLEEP_MODE_IDLE);
-        sleep_mode();
+        if (lightState != LS_BLINKING) {
+            set_sleep_mode(SLEEP_MODE_IDLE);
+            sleep_mode();
+        }
     }
 
     handleLED();
