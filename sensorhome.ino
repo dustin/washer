@@ -5,6 +5,10 @@ const int THIS_ID(1);
 const int LED_PORT(9);
 const int MIN_REPORT_FREQ(60000);
 const int HIGH_THRESH(10);
+// How long the light remains in "blink" state between on and off
+const int LIGHT_BLINK_TIMEOUT(4 * 60 * 1000);
+const int LIGHT_BLINK_FREQ_ON(250);
+const int LIGHT_BLINK_FREQ_OFF(750);
 
 /*
  Output:
@@ -31,6 +35,10 @@ const int HIGH_THRESH(10);
 #define JEE_LED_ON 0
 #define JEE_LED_OFF 1
 
+enum light_state {
+    LS_ON, LS_BLINKING, LS_OFF
+};
+
 typedef struct {
     int reading;
     int high;
@@ -42,8 +50,12 @@ static bool shouldSend(false);
 static unsigned long lastHeard(0);
 static unsigned long lastChange(0);
 static bool state(false);
+static bool lightLit(false);
+static enum light_state lightState(LS_OFF);
 
 static MilliTimer lastHeardTimer;
+static MilliTimer lightOffTimer;
+static MilliTimer lightBlinkTimer;
 
 ISR(WDT_vect) { Sleepy::watchdogEvent(); }
 
@@ -71,9 +83,43 @@ static void maybeChangeState(byte port, int reading) {
         delay(1);
         Serial.println(now - lastChange);
         lastChange = millis();
+
+        if (!thisState) {
+            Serial.println("# light_state -> blinking");
+            lightOffTimer.set(LIGHT_BLINK_TIMEOUT);
+            lightState = LS_BLINKING;
+        } else {
+            Serial.println("# light_state -> on");
+            lightState = LS_ON;
+        }
     }
     state = thisState;
-    digitalWrite(LED_PORT, state ? JEE_LED_ON : JEE_LED_OFF);
+}
+
+static void handleLED() {
+    switch(lightState) {
+    case LS_OFF:
+        digitalWrite(LED_PORT, JEE_LED_OFF);
+        break;
+    case LS_ON:
+        digitalWrite(LED_PORT, JEE_LED_ON);
+        break;
+    case LS_BLINKING:
+        if (lightOffTimer.poll()) {
+            Serial.println("# light_state -> off");
+            lightState = LS_OFF;
+        } else if (lightBlinkTimer.poll()) {
+            if (lightLit) {
+                digitalWrite(LED_PORT, JEE_LED_OFF);
+                lightBlinkTimer.set(LIGHT_BLINK_FREQ_OFF);
+                lightLit = false;
+            } else {
+                digitalWrite(LED_PORT, JEE_LED_ON);
+                lightBlinkTimer.set(LIGHT_BLINK_FREQ_ON);
+                lightLit = true;
+            }
+        }
+    }
 }
 
 void loop () {
@@ -121,6 +167,8 @@ void loop () {
         set_sleep_mode(SLEEP_MODE_IDLE);
         sleep_mode();
     }
+
+    handleLED();
 
     if (lastHeardTimer.poll()) {
         lastHeardTimer.set(MIN_REPORT_FREQ);
