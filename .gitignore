@@ -3,3 +3,4 @@
 *.o
 *~
 /server/monitor
+/monitor/monitor
