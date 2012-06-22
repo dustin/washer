@@ -3,11 +3,12 @@ package main
 import (
 	"bufio"
 	"flag"
-	"github.com/dustin/rs232.go"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/dustin/rs232.go"
 )
 
 var mockMode bool
@@ -25,7 +26,7 @@ func initSourceSerial() io.ReadCloser {
 	if err != nil {
 		log.Fatalf("Error opening port: %s", err)
 	}
-	return &port
+	return port
 }
 
 type mockReader struct {
