@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 )
 
 func WasherServer(w http.ResponseWriter, req *http.Request) {
 	st := getState()
-	st.StateDuration = st.StateDuration / time.Millisecond
 	json.NewEncoder(w).Encode(st)
 }
 

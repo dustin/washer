@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 	"strings"
@@ -8,12 +9,24 @@ import (
 )
 
 type Reading struct {
-	Port          int           `json:"port"`
-	Reading       int           `json:"reading"`
-	High          int           `json:"high"`
-	Seq           int           `json:"-"`
-	On            bool          `json:"on"`
-	StateDuration time.Duration `json:"state_duration"`
+	Port          int
+	Reading       int
+	High          int
+	Seq           int
+	On            bool
+	StateDuration time.Duration
+}
+
+func (r *Reading) MarshalJSON() ([]byte, error) {
+	m := map[string]interface{}{
+		"port":              r.Port,
+		"reading":           r.Reading,
+		"high":              r.High,
+		"on":                r.On,
+		"state_duration_ms": int64(r.StateDuration / time.Millisecond),
+		"state_duration":    r.StateDuration.String(),
+	}
+	return json.Marshal(m)
 }
 
 func parseInt(s string, size int) int64 {
