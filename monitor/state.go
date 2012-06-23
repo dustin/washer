@@ -1,12 +1,10 @@
 package main
 
-type ApplianceState Reading
-
 type tracker struct {
-	state ApplianceState
+	state Reading
 
-	input chan ApplianceState
-	reqs  chan chan ApplianceState
+	input chan Reading
+	reqs  chan chan Reading
 }
 
 var global_tracker tracker
@@ -23,18 +21,18 @@ func tracker_loop() {
 }
 
 func init() {
-	global_tracker.input = make(chan ApplianceState)
-	global_tracker.reqs = make(chan chan ApplianceState)
+	global_tracker.input = make(chan Reading)
+	global_tracker.reqs = make(chan chan Reading)
 
 	go tracker_loop()
 }
 
-func saveState(s ApplianceState) {
+func saveState(s Reading) {
 	global_tracker.input <- s
 }
 
-func getState() ApplianceState {
-	r := make(chan ApplianceState)
+func getState() Reading {
+	r := make(chan Reading)
 	global_tracker.reqs <- r
 	return <-r
 }

@@ -17,7 +17,7 @@ type Reading struct {
 	StateDuration time.Duration
 }
 
-func (r *Reading) MarshalJSON() ([]byte, error) {
+func (r Reading) MarshalJSON() ([]byte, error) {
 	m := map[string]interface{}{
 		"port":              r.Port,
 		"reading":           r.Reading,
@@ -47,7 +47,7 @@ func processReading(line string) {
 		On:            parts[5] == "ON",
 		StateDuration: time.Duration(1e6 * parseInt(parts[6], 64))}
 
-	saveState(ApplianceState(r))
+	saveState(r)
 	log.Printf("Read %d/%d (%s), from %d (%d).  In that state %s",
 		r.Reading, r.High, parts[5], r.Port, r.Seq,
 		r.StateDuration.String())
