@@ -24,7 +24,7 @@ var notifyDelay = time.Minute * 5
 type notifier struct {
 	Name     string
 	Driver   string
-	To       string
+	Event    string
 	Disabled bool
 	Config   map[string]string
 }
@@ -141,7 +141,9 @@ func notify() {
 		t = time.AfterFunc(notifyDelay,
 			func() {
 				for _, n := range notifiers {
-					go n.notify(note)
+					if n.Event == "" || n.Event == note.Event {
+						go n.notify(note)
+					}
 				}
 			})
 	}
@@ -149,7 +151,7 @@ func notify() {
 
 func notifySwitch(port int, onoff string, after time.Duration) {
 	msg := notification{
-		Event: "Laundry " + onoff,
+		Event: onoff,
 		Msg: fmt.Sprintf("Laundry device %v changed to %v after %s",
 			port, onoff, after),
 	}
