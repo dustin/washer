@@ -60,6 +60,7 @@ func processSwitchEvent(line string) {
 	// on := parts[2] == "ON"
 	d := time.Duration(1e6 * parseInt(parts[3], 64))
 	log.Printf("Changed %d to %s after %s", port, parts[2], d.String())
+	notifySwitch(port, parts[2], d)
 }
 
 func processInfo(line string) {
