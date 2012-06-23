@@ -77,6 +77,8 @@ func main() {
 	port := initSource()
 	defer port.Close()
 
+	go notify()
+
 	if webBind != "" {
 		go startWeb(webBind)
 	} else {
