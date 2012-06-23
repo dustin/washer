@@ -60,6 +60,9 @@ func processException(line string) {
 
 func processLine(line string) {
 	// log.Printf("<: %s", line)
+	if len(line) < 1 {
+		return
+	}
 	switch line[0] {
 	default:
 		log.Printf("UNHANDLED:  %s", line)
