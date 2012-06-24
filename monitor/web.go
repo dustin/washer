@@ -22,6 +22,8 @@ const htmltmplsrc = `<html>
 var htmltmpl = template.Must(template.New("h").Parse(htmltmplsrc))
 
 func washerJSON(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	st := getState()
 	json.NewEncoder(w).Encode(st)
 }
