@@ -2,5 +2,6 @@
 *.6
 *.o
 *~
-/server/monitor
 /monitor/monitor
+/server/monitor
+build-cli

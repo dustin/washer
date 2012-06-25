@@ -4,7 +4,7 @@
 const int THIS_ID(1);
 const int LED_PORT(9);
 const int MIN_REPORT_FREQ(60000);
-const int HIGH_THRESH(10);
+const int HIGH_THRESH(50);
 // How long the light remains in "blink" state between on and off
 const unsigned long LIGHT_BLINK_TIMEOUT(5l * 60l * 1000l);
 const int LIGHT_BLINK_FREQ_ON(250);
@@ -66,7 +66,9 @@ void setup () {
     Serial.begin(57600);
     rf12_initialize(THIS_ID, RF12_433MHZ, 4);
     Serial.print("# Initialized ");
-    Serial.println(THIS_ID);
+    Serial.print(THIS_ID);
+    Serial.print(" with threshold of ");
+    Serial.println(HIGH_THRESH);
 
     lastHeardTimer.set(MIN_REPORT_FREQ);
 }
