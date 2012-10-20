@@ -83,6 +83,7 @@ func main() {
 			log.Fatalf("Error initializing syslog: %v", err)
 		}
 		log.SetOutput(sl)
+		log.SetFlags(0)
 	}
 
 	port := initSource()
