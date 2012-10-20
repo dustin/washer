@@ -5,6 +5,7 @@ import (
 	"flag"
 	"io"
 	"log"
+	"log/syslog"
 	"os"
 	"time"
 
@@ -73,7 +74,17 @@ func initSource() io.ReadCloser {
 }
 
 func main() {
+	useSyslog := flag.Bool("syslog", false, "Log to syslog")
 	flag.Parse()
+
+	if *useSyslog {
+		sl, err := syslog.New(syslog.LOG_INFO, "washer")
+		if err != nil {
+			log.Fatalf("Error initializing syslog: %v", err)
+		}
+		log.SetOutput(sl)
+	}
+
 	port := initSource()
 	defer port.Close()
 
