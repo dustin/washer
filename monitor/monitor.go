@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/dustin/rs232.go"
+	"github.com/dustin/go-rs232"
 )
 
 var mockMode bool
