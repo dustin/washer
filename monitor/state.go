@@ -7,7 +7,10 @@ type tracker struct {
 	reqs  chan chan Reading
 }
 
-var global_tracker tracker
+var global_tracker = tracker{
+	input: make(chan Reading),
+	reqs:  make(chan chan Reading),
+}
 
 func tracker_loop() {
 	for {
@@ -21,9 +24,6 @@ func tracker_loop() {
 }
 
 func init() {
-	global_tracker.input = make(chan Reading)
-	global_tracker.reqs = make(chan chan Reading)
-
 	go tracker_loop()
 }
 
