@@ -1,13 +1,11 @@
 package main
 
-type tracker struct {
+var global_tracker = struct {
 	state Reading
 
 	input chan Reading
 	reqs  chan chan Reading
-}
-
-var global_tracker = tracker{
+}{
 	input: make(chan Reading),
 	reqs:  make(chan chan Reading),
 }
