@@ -9307,7 +9307,7 @@ Grid 5.00 mm&lt;p&gt;
 </classes>
 <parts>
 <part name="IC1" library="linear" deviceset="LM358" device="N"/>
-<part name="D1" library="diode" deviceset="1N4148" device="DO35-10"/>
+<part name="D1" library="diode" deviceset="1N4148" device="DO35-10" value="1N4148"/>
 <part name="R1" library="rcl" deviceset="R-US_" device="0207/10" value="100k"/>
 <part name="R2" library="rcl" deviceset="R-US_" device="0207/10" value="39k"/>
 <part name="R3" library="rcl" deviceset="R-US_" device="0207/10" value="82k"/>
